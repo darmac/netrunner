@@ -4,18 +4,18 @@
             [reagent.core :as r]))
 
 (def navbar-links
-  [["Chat" "/" 0 nil]
-   ["Cards" "/cards" 1 nil]
-   ["Deck Builder" "/deckbuilder" 2 nil]
-   ["Play" "/play" 3 nil]
-   ["Help" "/help" 4 nil]
-   ["Settings" "/account" 5 #(:user %)]
-   ["Stats" "/stats" 6 #(:user %)]
-   ["About" "/about" 7 nil]
+  [["聊天" "/" 0 nil]
+   ["卡牌" "/cards" 1 nil]
+   ["卡组构建" "/deckbuilder" 2 nil]
+   ["游戏" "/play" 3 nil]
+   ["帮助" "/help" 4 nil]
+   ["设置" "/account" 5 #(:user %)]
+   ["状态" "/stats" 6 #(:user %)]
+   ["关于" "/about" 7 nil]
    ["Tournaments" "/tournament" 8 #(:tournament-organizer (:user %))]
-   ["Admin" "/admin" 9 #(:isadmin (:user %))]
-   ["Users" "/users" 10 #(:isadmin (:user %))]
-   ["Features" "/features" 11 #(:isadmin (:user %))]])
+   ["管理员" "/admin" 9 #(:isadmin (:user %))]
+   ["用户" "/users" 10 #(:isadmin (:user %))]
+   ["特性" "/features" 11 #(:isadmin (:user %))]])
 
 (defn navbar []
   (r/with-let [active (r/cursor app-state [:active-page])]

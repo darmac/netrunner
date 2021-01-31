@@ -283,7 +283,7 @@
         id (->> (side-identities side)
                 (sort-by :title)
                 first)]
-    (set-deck-on-state s {:name "New deck"
+    (set-deck-on-state s {:name "新卡组"
                           :cards []
                           :identity id
                           :format "standard"
@@ -300,7 +300,7 @@
 (defn import-deck-modal []
   (r/with-let [s (r/atom {})]
     [:div
-     [:h3 "Enter a Public NRDB Deck ID or URL"]
+     [:h3 "输入 NRDB 卡组 ID 或 URL"]
      [:p [:input.url {:type "text"
                       :id "nrdb-input"
                       :placeholder "NRDB ID"
@@ -314,8 +314,8 @@
          {:disabled disabled
           :class (when disabled "disabled")
           :on-click #(send-import s)}
-         "Import"])
-      [:button {:on-click #(reagent-modals/close-modal!)} "Cancel"]]]))
+         "导入"])
+      [:button {:on-click #(reagent-modals/close-modal!)} "取消"]]]))
 
 (defn load-decks-from-json
   [json]
@@ -484,7 +484,7 @@
                             :selected 0})]
     (fn [s]
       [:div
-       [:h3 "Add cards"]
+       [:h3 "新增卡牌"]
        [:form.card-search {:on-submit #(handle-add s card-state %)}
         [:input.lookup {:type "text"
                         :placeholder "Card name"
@@ -495,7 +495,7 @@
         [:input.qty {:type "text"
                      :value (:quantity @card-state)
                      :on-change #(swap! card-state assoc :quantity (.. % -target -value))}]
-        [:button "Add to deck"]
+        [:button "增加到卡组"]
         (let [query (:query @card-state)
               matches (match (get-in @s [:deck :identity]) query)
               exact-match (= (:title (first matches)) query)]
@@ -604,11 +604,11 @@
 
       (not @decks-loaded)
       [:div.deck-collection
-       [:h4 "Loading deck collection..."]]
+       [:h4 "加载卡组..."]]
 
       (empty? @decks)
       [:div.deck-collection
-       [:h4 "No decks"]]
+       [:h4 "无卡组"]]
 
       :else
       (let [filtered-decks (->> @decks
@@ -754,30 +754,30 @@
 (defn edit-buttons
   [s]
   [:div.button-bar
-   [:button {:on-click #(save-deck s)} "Save"]
-   [:button {:on-click #(cancel-edit s)} "Cancel"]])
+   [:button {:on-click #(save-deck s)} "保存"]
+   [:button {:on-click #(cancel-edit s)} "取消"]])
 
 (defn delete-buttons
   [s]
   [:div.button-bar
-   [:button {:on-click #(handle-delete s)} "Confirm Delete"]
-   [:button {:on-click #(end-delete s)} "Cancel"]])
+   [:button {:on-click #(handle-delete s)} "确认删除"]
+   [:button {:on-click #(end-delete s)} "取消"]])
 
 (defn view-buttons
   [s deck]
   [:div.button-bar
-   [:button {:on-click #(edit-deck s)} "Edit"]
-   [:button {:on-click #(delete-deck s)} "Delete"]
+   [:button {:on-click #(edit-deck s)} "编辑"]
+   [:button {:on-click #(delete-deck s)} "删除"]
    (when (and (:stats deck)
               (not= "none" (get-in @app-state [:options :deckstats])))
-     [:button {:on-click #(clear-deck-stats s)} "Clear Stats"])
+     [:button {:on-click #(clear-deck-stats s)} "清空状态"])
    (let [disabled (or (:editing-game @app-state false) (:gameid @app-state false))]
      [:button.float-right {:on-click #(do
                                         (swap! app-state assoc :create-game-deck (:deck @s))
                                         (.setToken history "/play"))
                            :disabled disabled
                            :class (when disabled "disabled")}
-      "Create Game"])])
+      "创建游戏"])])
 
 (defn selected-panel
   [s]
@@ -799,7 +799,7 @@
 (defn deck-name-editor
   [s]
   [:div
-   [:h3 "Deck name"]
+   [:h3 "卡组名称"]
    [:input.deckname
     {:type "text"
      :placeholder "Deck name"
@@ -810,7 +810,7 @@
 (defn format-editor
   [s]
   [:div
-   [:h3 "Format"]
+   [:h3 "标准"]
    [:select.format {:value (get-in @s [:deck :format] "standard")
                     :on-change #(swap! s assoc-in [:deck :format] (.. % -target -value))}
     (for [[k v] slug->format]
@@ -832,7 +832,7 @@
 (defn identity-editor
   [s]
   [:div
-   [:h3 "Identity"]
+   [:h3 "身份"]
    [:select.identity {:value (identity-option-string (get-in @s [:deck :identity]))
                       :on-change #(swap! s assoc-in [:deck :identity] (create-identity s %))}
     (let [idents (side-identities (get-in @s [:deck :identity :side]))]
@@ -864,7 +864,7 @@
 (defn notes-textbox
   [s]
   [:textarea.notes-edit
-   {:placeholder "Deck notes"
+   {:placeholder "卡组备注"
     :ref #(swap! db-dom assoc :deck-notes %)
     :value (get-in @s [:deck :notes])
     :on-change #(swap! s assoc-in [:deck :notes] (.. % -target -value))}])
@@ -877,11 +877,11 @@
    [identity-editor s]
    [card-lookup s]
    [:div
-    [:h3 "Decklist"
-     [:span.small "(Type or paste a decklist, it will be parsed)"]]]
+    [:h3 "卡组表"
+     [:span.small "(输入或粘贴一个卡组列表)"]]]
    [edit-textbox s]
    [:div
-    [:h3 "Notes"]]
+    [:h3 "备注"]]
    [notes-textbox s]])
 
 (defn- reset-deck-filters [state]
@@ -892,13 +892,13 @@
 
 (defn collection-buttons [s user decks-loaded]
   [:div.button-bar
-   [cond-button "New Corp deck" (and @user @decks-loaded) #(do
+   [cond-button "新公司卡组" (and @user @decks-loaded) #(do
                                                              (reset-deck-filters s)
                                                              (new-deck s "Corp"))]
-   [cond-button "New Runner deck" (and @user @decks-loaded) #(do
+   [cond-button "新潜袭卡组" (and @user @decks-loaded) #(do
                                                                (reset-deck-filters s)
                                                                (new-deck s "Runner"))]
-   [cond-button "Import deck" (and @user @decks-loaded)
+   [cond-button "导入卡组" (and @user @decks-loaded)
     #(reagent-modals/modal! [import-deck-modal]
                             {:shown (fn [] (.focus (.getElementById js/document "nrdb-input")))})]])
 
@@ -937,7 +937,7 @@
                :on-click #(do
                             (reset-deck-filters state)
                             (reset! scroll-top 0))}
-      "Reset"]]))
+      "重置"]]))
 
 (defn- zoom-card-view [card state]
   [card state]

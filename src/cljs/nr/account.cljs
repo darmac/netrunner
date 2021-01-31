@@ -40,6 +40,7 @@
   (swap! app-state assoc-in [:options :pronouns] (:pronouns @s))
   (swap! app-state assoc-in [:options :sounds] (:sounds @s))
   (swap! app-state assoc-in [:options :lobby-sounds] (:lobby-sounds @s))
+  (swap! app-state assoc-in [:options :remote-cards] (:remote-cards @s))
   (swap! app-state assoc-in [:options :sounds-volume] (:volume @s))
   (swap! app-state assoc-in [:options :background] (:background @s))
   (swap! app-state assoc-in [:options :card-back] (:card-back @s))
@@ -122,7 +123,7 @@
        [:button.update-log-width {:type "button"
                                   :on-click #(do (swap! s assoc-in [:log-width] (get-in @app-state [:options :log-width]))
                                                  (reset! log-width (get-in @app-state [:options :log-width])))}
-        "Get current log width"]])))
+        "获取当前日志框宽度"]])))
 
 (defn log-top-option [s]
   (let [log-top (r/atom (:log-top @s))]
@@ -136,14 +137,14 @@
        [:button.update-log-width {:type "button"
                                   :on-click #(do (swap! s assoc-in [:log-top] (get-in @app-state [:options :log-top]))
                                                  (reset! log-top (get-in @app-state [:options :log-top])))}
-        "Get current log top"]])))
+        "获取当前日志框高度"]])))
 
 (defn change-email [s]
   (let [email-state (r/atom {:flash-message ""
                              :email ""})]
     (fn [s]
       [:div
-        [:h3 "Change email address"]
+        [:h3 "修改Email地址"]
         [:p.flash-message (:flash-message @email-state)]
         [:form {:on-submit (fn [event]
                              (.preventDefault event)
@@ -155,12 +156,12 @@
                                          (-> js/document .-location (.reload true))
                                          (swap! email-state assoc :flash-message message)))))))}
          (when-let [email (:email @s)]
-           [:p [:label.email "Current email: "]
+           [:p [:label.email "当前Email: "]
             [:input.email {:type "text"
                            :value email
                            :name "current-email"
                            :read-only true}]])
-         [:p [:label.email "Desired email: "]
+         [:p [:label.email "修正Email: "]
           [:input.email {:type "text"
                          :placeholder "Email address"
                          :name "email"
@@ -175,10 +176,10 @@
              {:disabled disabled
               :class (when disabled "disabled")
               }
-             "Update"])
+             "更新"])
           [:button {:on-click #(do (.preventDefault %)
                                    (reagent-modals/close-modal!))}
-           "Cancel"]]]])))
+           "取消"]]]])))
 
 (defn account-content [user s scroll-top]
   (r/create-class
@@ -189,18 +190,18 @@
      :reagent-render
      (fn [user s scroll-top]
        [:div#profile-form.panel.blue-shade.content-page {:ref "profile-form"}
-         [:h2 "Settings"]
+         [:h2 "设置"]
          [:form {:on-submit #(handle-post % "/profile" s)}
           [:section
            [:h3 "Email"]
            [:a {:href "" :on-click #(do
                                       (.preventDefault %)
-                                      (reagent-modals/modal! [change-email s]))} "Change email"]]
+                                      (reagent-modals/modal! [change-email s]))} "修改Email地址"]]
           [:section
            [:h3 "Avatar"]
            [avatar @user {:opts {:size 38}}]
            [:a {:href "http://gravatar.com" :target "_blank"} "Change on gravatar.com"]
-           [:h3 "Pronouns"]
+           [:h3 "称谓"]
            [:select {:value (:pronouns @s "none")
                      :on-change #(swap! s assoc :pronouns (.. % -target -value))}
             (doall
@@ -222,19 +223,25 @@
                             {:name "Xe/xem" :ref "xe"}]]
                 [:option {:value (:ref option) :key (:ref option)} (:name option)]))]]
           [:section
-           [:h3 "Sounds"]
+           [:h3 "声音"]
            [:div
             [:label [:input {:type "checkbox"
                              :value true
                              :checked (:lobby-sounds @s)
                              :on-change #(swap! s assoc-in [:lobby-sounds] (.. % -target -checked))}]
-             "Enable lobby sounds"]]
+             "激活大厅音效"]]
            [:div
             [:label [:input {:type "checkbox"
                              :value true
                              :checked (:sounds @s)
                              :on-change #(swap! s assoc-in [:sounds] (.. % -target -checked))}]
-             "Enable game sounds"]]
+             "激活游戏音效"]]
+          [:div
+           [:label [:input {:type "checkbox"
+                            :value false
+                            :checked (:remote-cards @s)
+                            :on-change #(swap! s assoc-in [:remote-cards] (.. % -target -checked))}]
+            "使用服务器远程卡牌图像(不建议启用)"]]
            [:div "Volume"
             [:input {:type "range"
                      :min 1 :max 100 :step 1
@@ -243,16 +250,16 @@
                      :disabled (not (or (:sounds @s) (:lobby-sounds @s)))}]]]
 
           [:section
-           [:h3 "Layout options"]
+           [:h3 "布局选项"]
            [:div
             [:label [:input {:type "checkbox"
                              :value true
                              :checked (:stacked-servers @s)
                              :on-change #(swap! s assoc-in [:stacked-servers] (.. % -target -checked))}]
-             "Server stacking is on by default"]]
+             "默认打开服务器堆叠"]]
 
            [:br]
-           [:h4 "Runner layout from Corp perspective"]
+           [:h4 "潜行者布局(公司视角)"]
            [:div
             [:div.radio
              [:label [:input {:name "runner-board-order"
@@ -260,7 +267,7 @@
                               :value "jnet"
                               :checked (= "jnet" (:runner-board-order @s))
                               :on-change #(swap! s assoc :runner-board-order (.. % -target -value))}]
-              "Runner rig layout is classic jnet (Top to bottom: Programs, Hardware, Resources)"]]
+              "经典jnet风格布局 (从上到下: 程序, 硬件, 资源)"]]
 
             [:div.radio
              [:label [:input {:name "runner-board-order"
@@ -268,13 +275,13 @@
                               :value "irl"
                               :checked (= "irl" (:runner-board-order @s))
                               :on-change #(swap! s assoc :runner-board-order (.. % -target -value))}]
-              "Runner rig layout is reversed (Top to bottom: Resources, Hardware, Programs)"]]]]
+              "反转风格布局 (从上到下: 资源, 硬件, 程序)"]]]]
 
           [log-width-option s]
           [log-top-option s]
 
           [:section
-           [:h3  "Game board background"]
+           [:h3  "游戏桌面背景"]
            (doall (for [option [{:name "The Root"        :ref "lobby-bg"}
                                 {:name "Freelancer"      :ref "freelancer-bg"}
                                 {:name "Mushin No Shin"  :ref "mushin-no-shin-bg"}
@@ -294,7 +301,7 @@
                       (:name option)]]))]
 
           [:section
-           [:h3  "Card backs"]
+           [:h3  "卡背图案"]
            (doall (for [option [{:name "NISEI" :ref "nisei"}
                                 {:name "FFG" :ref "ffg"}]]
                     [:div.radio {:key (:name option)}
@@ -306,51 +313,51 @@
                       (:name option)]]))]
 
           [:section
-           [:h3  "Card preview zoom"]
-           (doall (for [option [{:name "Card Image" :ref "image"}
-                                {:name "Card Text" :ref "text"}]]
+           [:h3  "游戏预览区域"]
+           (doall (for [option [{:name "卡牌图像" :ref "image"}
+                                {:name "卡牌文字" :ref "text"}]]
                     [:div.radio {:key (:name option)}
                      [:label [:input {:type "radio"
-                                      :name "card-zoom"
+                                      :name "卡牌缩放"
                                       :value (:ref option)
                                       :on-change #(swap! s assoc :card-zoom (.. % -target -value))
                                       :checked (= (:card-zoom @s) (:ref option))}]
                       (:name option)]]))]
 
           [:section
-           [:h3 " Game Win/Lose statistics "]
-           (doall (for [option [{:name "Always"                   :ref "always"}
-                                {:name "Competitive Lobby Only"   :ref "competitive"}
-                                {:name "None"                     :ref "none"}]]
+           [:h3 " 游戏胜负统计 "]
+           (doall (for [option [{:name "总是"                   :ref "always"}
+                                {:name "仅竞技厅"   :ref "competitive"}
+                                {:name "关闭"                     :ref "none"}]]
                     [:div {:key (:name option)}
                      [:label [:input {:type "radio"
-                                      :name "gamestats"
+                                      :name "游戏状态"
                                       :value (:ref option)
                                       :on-change #(swap! s assoc-in [:gamestats] (.. % -target -value))
                                       :checked (= (:gamestats @s) (:ref option))}]
                       (:name option)]]))]
 
           [:section
-           [:h3 " Deck statistics "]
-           (doall (for [option [{:name "Always"                   :ref "always"}
-                                {:name "Competitive Lobby Only"   :ref "competitive"}
-                                {:name "None"                     :ref "none"}]]
+           [:h3 " 卡组统计 "]
+           (doall (for [option [{:name "总是"                   :ref "always"}
+                                {:name "仅竞技厅"   :ref "competitive"}
+                                {:name "关闭"                     :ref "none"}]]
                     [:div {:key (:name option)}
                      [:label [:input {:type "radio"
-                                      :name "deckstats"
+                                      :name "卡组状态"
                                       :value (:ref option)
                                       :on-change #(swap! s assoc-in [:deckstats] (.. % -target -value))
                                       :checked (= (:deckstats @s) (:ref option))}]
                       (:name option)]]))]
 
           [:section {:id "alt-art"}
-           [:h3 "Alt arts"]
+           [:h3 "异画卡"]
            [:div
             [:label [:input {:type "checkbox"
-                             :name "show-alt-art"
+                             :name "显示异画卡"
                              :checked (:show-alt-art @s)
                              :on-change #(swap! s assoc-in [:show-alt-art] (.. % -target -checked))}]
-             "Show alternate card arts"]]
+             "显示异画卡"]]
 
            (when (and (:special @user) (:show-alt-art @s) (:alt-info @app-state))
              [:div {:id "my-alt-art"}
@@ -373,10 +380,10 @@
                    :disabled disabled
                    :class (if disabled "disabled" "")
                    :on-click #(clear-card-art s)}
-                  "Reset All to Official Art"])]])]
+                  "重置所有卡牌为官方绘画"])]])]
 
          [:section
-          [:h3 "Blocked users"]
+          [:h3 "用户黑名单"]
           [:div
            [:input {:on-change #(swap! s assoc-in [:block-user-input] (-> % .-target .-value))
                     :on-key-down (fn [e]
@@ -389,7 +396,7 @@
            [:button.block-user-btn {:type "button"
                                     :name "block-user-button"
                                     :on-click #(add-user-to-block-list user s)}
-            "Block user"]]
+            "阻止用户"]]
           (doall (for [bu (:blocked-users @s)]
                    [:div.line {:key bu}
                     [:button.small.unblock-user {:type "button"
@@ -397,7 +404,7 @@
                     [:span.blocked-user-name (str "  " bu)]]))]
 
      [:p
-      [:button "Update Profile"]
+      [:button "更新设定"]
       [:span.flash-message (:flash-message @s)]]]])}))
 
 (defn account-wrapper [user s scroll-top]

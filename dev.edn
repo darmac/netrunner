@@ -15,7 +15,7 @@
  :chat  {:max-length 144
          :rate-window 60  ;; sliding window size in seconds
          :rate-cnt 10}    ;; number of messages allowed in the sliding window
- :web   {:port 1042}
+ :web   {:port 80} ;;darmac change for jinteki-cn
  :email {:host nil
          :user nil
          :pass nil

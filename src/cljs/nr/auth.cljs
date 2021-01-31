@@ -16,6 +16,7 @@
 (defn handle-post [event url s]
   (.preventDefault event)
   (swap! s dissoc :flash-message)
+  (println "\n event:" event "\n url:" url "\n username:" (:username @s) "\n verifycode:" (:verifycode @s))
   (let [params (-> event .-target js/$ .serialize)
         _ (.-serialize (js/$ (.-target event)))] ;; params is nil when built in :advanced mode. This fixes the issue.
     (go (let [response (<! (POST url params))]
@@ -28,6 +29,9 @@
               422 (swap! s assoc :flash-message "Username taken")
               423 (swap! s assoc :flash-message "Username too long")
               424 (swap! s assoc :flash-message "Email already used")
+              425 (swap! s assoc :flash-message "请填写8位注册码")
+              426 (swap! s assoc :flash-message "注册码删除失败")
+              427 (swap! s assoc :flash-message "无效的注册码")
               (-> js/document .-location (.reload true))))))))
 
 (defn handle-logout [event]
@@ -79,6 +83,9 @@
 (defn register [event s]
   (.preventDefault event)
    (cond
+     (empty? (:verifycode @s))
+     (swap! s assoc :flash-message "请填写注册码")
+
      (empty? (:email @s))
      (swap! s assoc :flash-message "Email can't be empty")
 
@@ -99,16 +106,25 @@
      (swap! s assoc :flash-message "Passwords must match")
 
      :else
+     ;(swap! s assoc :flash-message "注册功能未开放,请联系管理员,QQ:515580902")))
      (handle-post event "/register" s)))
 
 (defn register-form []
   (r/with-let [s (r/atom {:flash-message ""})]
     [:div#register-form.modal.fade {:ref "register-form"}
      [:div.modal-dialog
-      [:h3 "Create an account"]
+      [:h3 "创建账号,注册码请联系(QQ:515580906)"]
       [:p.flash-message (:flash-message @s)]
       [:form {:on-submit #(register % s)}
-       [:p [:input {:type "text"
+      [:p [:input {:type "text"
+                    :placeholder "Verifycode"
+                    :name "verifycode"
+                    :ref "verifycode"
+                    :value (:verifycode @s)
+                    :on-change #(swap! s assoc :verifycode (-> % .-target .-value))
+                    ;:on-blur #(check-verifycode (-> % .-target .-value) s)
+                    :maxLength "8"}]]
+      [:p [:input {:type "text"
                     :placeholder "Email"
                     :name "email"
                     :ref "email"

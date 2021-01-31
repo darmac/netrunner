@@ -64,8 +64,9 @@
         (handler req)))))
 
 (defn register-handler
-  [{{:keys [username password confirm-password email]} :params
+  [{{:keys [verifycode username password confirm-password email]} :params
     :as request}]
+
   (cond
     (< 20 (count username))
     (response 401 {:message "Usernames are limited to 20 characters"})
@@ -79,6 +80,12 @@
     (find-one-as-map-case-insensitive db "users" {:email email})
     (response 424 {:message "Email taken"})
 
+    (not (mc/find-one-as-map db "verify_code" {:code {$regex (str "^" verifycode "$") $options "i"}}))
+    (response 427 {:message "注册码不正确"})
+
+    (< 8 (count verifycode))
+    (response 425 {:message "请填写8位注册码"})
+
     :else
     (let [first-user (not (mc/any? db "users"))
           email-hash (md5 email)
@@ -86,6 +93,9 @@
           last-connection registration-date
           hash-pw (password/encrypt password)
           demo-decks (mc/find-maps db "decks" {:username "__demo__"})]
+
+      (mc/remove db "verify_code" {:code verifycode}) ; delete verify code
+
       (mc/insert db "users"
                  {:username         username
                   :email            email

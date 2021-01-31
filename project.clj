@@ -117,7 +117,18 @@
              :reload-clj-files false
              :css-dirs ["resources/public/css"]}
 
+  ;; darmac add repo
+  :repositories [["central" "http://maven.aliyun.com/nexus/content/groups/public"]
+                 ["clojars" "https://mirrors.tuna.tsinghua.edu.cn/clojars/"]]
+
+
   ;; Set timeout to 2 min to allow for full compilation after a clean.
   :repl-options {:timeout 180000
                  :init-ns web.core
                  :init (do (use 'web.lobby) (-main "dev"))})
+
+;; darmac note: 这个是官方的启用非严格检查方案
+(require 'cemerick.pomegranate.aether)
+(cemerick.pomegranate.aether/register-wagon-factory!
+ "http" #(org.apache.maven.wagon.providers.http.HttpWagon.))
+

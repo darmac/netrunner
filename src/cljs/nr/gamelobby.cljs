@@ -231,7 +231,7 @@
 
 (defn deckselect-modal [user {:keys [gameid games decks format]}]
   [:div
-    [:h3 "Select your deck"]
+    [:h3 "选择你的卡组"]
     [:div.deck-collection.lobby-deck-selector
      (let [players (:players (some #(when (= (:gameid %) @gameid) %) @games))
            side (:side (some #(when (= (-> % :user :_id) (:_id @user)) %) players))
@@ -280,7 +280,7 @@
        :reagent-render
        (fn [game]
          [:div.chat-box
-          [:h3 "Chat"]
+          [:h3 "聊天"]
           [:div.message-list {:ref #(swap! lobby-dom assoc :message-list %)}
            (map-indexed (fn [i msg]
                           (if (= (:user msg) "__system__")
@@ -300,7 +300,7 @@
                      :type "text"
                      :value (:msg @s)
                      :on-change #(swap! s assoc :msg (-> % .-target .-value))}]
-            [:button "Send"]]]])})))
+            [:button "发送"]]]])})))
 
 (defn- blocked-from-game
   "Remove games for which the user is blocked by one of the players"
@@ -353,7 +353,7 @@
         filtered-games (r/track #(filter-blocked-games @user @roomgames))]
     [:div.game-list
      (if (empty? @filtered-games)
-       [:h4 "No games"]
+       [:h4 "没有游戏"]
        (doall
          (for [game @filtered-games]
            ^{:key (:gameid game)}
@@ -381,7 +381,7 @@
      [room-tab user s games "tournament" "Tournament"]
      [room-tab user s games "competitive" "Competitive"]
      [room-tab user s games "casual" "Casual"]]
-    [cond-button "New game"
+    [cond-button "创建游戏"
      (and (not (or @gameid
                    (:editing @s)
                    (= "tournament" (:room @s))))
@@ -402,7 +402,7 @@
      #(do (replay-game s)
           (resume-sound))]
     [:button {:type "button"
-              :on-click #(ws/ws-send! [:lobby/list])} "Reload list"]]
+              :on-click #(ws/ws-send! [:lobby/list])} "刷新列表"]]
    (let [password-game (some #(when (= @password-gameid (:gameid %)) %) @games)]
      [game-list user {:password-game password-game
                       :editing (:editing @s)
@@ -417,7 +417,7 @@
       [:div
        [:div.button-bar
         [:button {:type "button"
-                  :on-click #(create-game s)} "Start replay"]
+                  :on-click #(create-game s)} "开始回放"]
         [:button {:type "button"
                   :on-click #(do
                                (swap! s assoc :editing false)
@@ -431,19 +431,19 @@
       [:div
        [:div.button-bar
         [:button {:type "button"
-                  :on-click #(create-game s)} "Create"]
+                  :on-click #(create-game s)} "创建"]
         [:button {:type "button"
-                  :on-click #(swap! s assoc :editing false)} "Cancel"]]
+                  :on-click #(swap! s assoc :editing false)} "取消"]]
        (when-let [flash-message (:flash-message @s)]
          [:p.flash-message flash-message])
        [:section
-        [:h3 "Title"]
+        [:h3 "标题"]
         [:input.game-title {:on-change #(swap! s assoc :title (.. % -target -value))
                             :value (:title @s)
                             :placeholder "Title"
                             :maxLength "100"}]]
        [:section
-        [:h3 "Side"]
+        [:h3 "阵营"]
         (doall
           (for [option ["Corp" "Runner"]]
             ^{:key option}
@@ -456,7 +456,7 @@
               option]]))]
 
        [:section
-        [:h3 "Format"]
+        [:h3 "标准"]
         [:select.format {:value (:format @s "standard")
                          :on-change #(swap! s assoc :format (.. % -target -value))}
          (for [[k v] slug->format]
@@ -464,18 +464,18 @@
            [:option {:value k} v])]]
 
        [:section
-        [:h3 "Options"]
+        [:h3 "选项"]
         [:p
          [:label
           [:input {:type "checkbox" :checked (:allow-spectator @s)
                    :on-change #(swap! s assoc :allow-spectator (.. % -target -checked))}]
-          "Allow spectators"]]
+          "允许旁观"]]
         [:p
          [:label
           [:input {:type "checkbox" :checked (:spectatorhands @s)
                    :on-change #(swap! s assoc :spectatorhands (.. % -target -checked))
                    :disabled (not (:allow-spectator @s))}]
-          "Make players' hidden information visible to spectators"]]
+          "允许旁观者查看用户的隐藏信息"]]
         [:div.infobox.blue-shade {:style {:display (if (:spectatorhands @s) "block" "none")}}
          [:p "This will reveal both players' hidden information to ALL spectators of your game, "
           "including hand and face-down cards."]
@@ -486,7 +486,7 @@
                    :on-change #(let [checked (.. % -target -checked)]
                                  (swap! s assoc :protected checked)
                                  (when (not checked) (swap! s assoc :password "")))}]
-          "Password protected"]]
+          "密码保护"]]
         (when (:protected @s)
           [:p
            [:input.game-title {:on-change #(swap! s assoc :password (.. % -target -value))
@@ -498,7 +498,7 @@
          [:label
           [:input {:type "checkbox" :checked (:save-replay @s)
                    :on-change #(swap! s assoc :save-replay (.. % -target -checked))}]
-          "Save replay"]]
+          "保存录像"]]
         [:div.infobox.blue-shade {:style {:display (if (:save-replay @s) "block" "none")}}
          [:p "This will save a replay file of this match with open information (e.g. open cards in hand)."
           " The file is available only after the game is finished."]
@@ -519,17 +519,17 @@
        [:div.button-bar
         (when (first-user? players @user)
           [cond-button
-           "Start"
+           "开始"
            (every? :deck players)
            #(ws/ws-send! [:netrunner/start @gameid])])
-        [:button {:on-click #(leave-lobby s)} "Leave"]
+        [:button {:on-click #(leave-lobby s)} "离开"]
         (when (first-user? players @user)
-          [:button {:on-click #(ws/ws-send! [:lobby/swap @gameid])} "Swap sides"])]
+          [:button {:on-click #(ws/ws-send! [:lobby/swap @gameid])} "交换阵营"])]
        [:div.content
         [:h2 (:title game)]
         (when-not (every? :deck players)
-          [:div.flash-message "Waiting players deck selection"])
-        [:h3 "Players"]
+          [:div.flash-message "等待玩家选择卡组"])
+        [:h3 "玩家"]
         [:div.players
          (doall
            (map-indexed
@@ -544,7 +544,7 @@
                      [:span.label
                       (if this-player
                         name
-                        "Deck selected")]])
+                        "卡组已选择")]])
                   (when-let [deck (:deck player)]
                     [:div.float-right [deck-format-status-span deck (:format game "standard") true]])
                   (when this-player
@@ -553,18 +553,18 @@
                                    [deckselect-modal user {:games games :gameid gameid
                                                            :sets sets :decks decks
                                                            :format (:format game "standard")}])}
-                     "Select Deck"])]))
+                     "选择卡组"])]))
              players))]
-        [:h3 "Options"]
+        [:h3 "选项"]
         [:ul.options
          (when (:allow-spectator game)
-           [:li "Allow spectators"])
+           [:li "允许旁观"])
          (when (:spectatorhands game)
-           [:li "Make players' hidden information visible to spectators"])
+           [:li "允许旁观者查看用户的隐藏信息"])
          (when (:password game)
-           [:li "Password protected"])
+           [:li "密码保护"])
          (when (:save-replay game)
-           [:li "Save replay"])
+           [:li "保存录像"])
          (when (:save-replay game)
            [:div.infobox.blue-shade {:style {:display (if (:save-replay @s) "block" "none")}}
             [:p "This will save a replay file of this match with open information (e.g. open cards in hand)."
@@ -576,7 +576,7 @@
         (when (:allow-spectator game)
           [:div.spectators
            (let [c (:spectator-count game)]
-             [:h3 (str c " Spectator" (when (not= c 1) "s"))])
+             [:h3 (str c " 旁观者" (when (not= c 1) "s"))])
            (for [spectator (:spectators game)
                  :let [_id (get-in spectator [:user :_id])]]
              ^{:key _id}
