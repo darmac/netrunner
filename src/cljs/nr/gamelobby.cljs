@@ -391,7 +391,7 @@
                empty?))
      #(do (new-game s)
           (resume-sound))]
-    [cond-button "Load Replay"
+    [cond-button "加载录像"
      (and (not (or @gameid
                    (:editing @s)
                    (= "tournament" (:room @s))))
