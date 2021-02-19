@@ -33,6 +33,11 @@
 (defonce replay-side (r/atom :spectator))
 (defonce show-replay-link (r/atom false))
 
+(defn use-remote-cards?
+  "允许使用远程卡牌图片?"
+  []
+  (get-in @app-state [:options :remote-cards] false))
+
 (defn image-url [{:keys [side code] :as card}]
   (let [art (or (:art card) ; use the art set on the card itself, or fall back to the user's preferences.
                 (get-in @game-state [(keyword (lower-case side)) :user :options :alt-arts (keyword code)]))
@@ -44,8 +49,12 @@
         version-name (if (and art show-art)
                        (get (:alt_art alt-card) (keyword art) art)
                        (:code card))
-        card-name (image-language-name card version-name)]
-    (str "/img/cards/" card-name ".png")))
+        local-path (str "http://127.0.0.1:3000/" version-name ".png")
+        remote-path (str "/img/cards/" version-name ".png")
+        final-path (if (use-remote-cards?)
+                       remote-path
+                       local-path)]
+    (str final-path)))
 
 (defn generate-replay-link [origin]
   (let [n (:n @replay-status)

@@ -17,6 +17,7 @@
                             :pronouns "none"
                             :language "en"
                             :show-alt-art true
+                            :remote-cards false
                             :stacked-servers (= (get-local-value "stacked-servers" "true") "true")
                             :runner-board-order (let [value (get-local-value "runner-board-order" "irl")]
                                                   (case value

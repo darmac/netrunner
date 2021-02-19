@@ -42,6 +42,7 @@
   (swap! app-state assoc-in [:options :language] (:language @s))
   (swap! app-state assoc-in [:options :sounds] (:sounds @s))
   (swap! app-state assoc-in [:options :lobby-sounds] (:lobby-sounds @s))
+  (swap! app-state assoc-in [:options :remote-cards] (:remote-cards @s))
   (swap! app-state assoc-in [:options :sounds-volume] (:volume @s))
   (swap! app-state assoc-in [:options :background] (:background @s))
   (swap! app-state assoc-in [:options :card-back] (:card-back @s))
@@ -251,6 +252,12 @@
                              :checked (:sounds @s)
                              :on-change #(swap! s assoc-in [:sounds] (.. % -target -checked))}]
              (tr [:settings.enable-game-sounds "Enable game sounds"])]]
+           [:div
+            [:label [:input {:type "checkbox"
+                             :value false
+                             :checked (:remote-cards @s)
+                             :on-change #(swap! s assoc-in [:remote-cards] (.. % -target -checked))}]
+             "使用服务器远程卡牌图像(不建议启用)"]]
            [:div (tr [:settings.volume "Volume"])
             [:input {:type "range"
                      :min 1 :max 100 :step 1
