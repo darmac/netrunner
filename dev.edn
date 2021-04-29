@@ -14,7 +14,7 @@
         :rate-window 60
         ;; number of messages allowed in the sliding window
         :rate-cnt 10}
- :web {:port 1042}
+ :web {:port 80}
  :email {:host nil
          :user nil
          :pass nil

@@ -29,7 +29,7 @@
                   :port 27017
                   :name "netrunner"}
    :mongodb/connection {:base (ig/ref :mongodb/base)}
-   :web/base {:port 1042}
+   :web/base {:port 80}
    :web/app {:db (ig/ref :mongodb/connection)}
    :web/server {:base (ig/ref :web/base)
                 :app (ig/ref :web/app)}
