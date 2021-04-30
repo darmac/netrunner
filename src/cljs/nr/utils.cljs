@@ -313,15 +313,20 @@
   (let [h (.-scrollTop (rd/dom-node this))]
     (reset! scroll-top-atom h)))
 
+(defn use-remote-cards?
+  "允许使用远程卡牌图片?"
+  []
+  (get-in @app-state [:options :remote-cards] false))
+
 (defn get-image-path
-  [images lang res art]
-  (let [path (get-in images [lang res art])]
-    (cond
-      path path
-      (not= art :stock) (get-image-path images lang res :stock)
-      (not= res :default) (get-image-path images lang :default art)
-      (not= lang :en) (get-image-path images :en res art)
-      :else "/img/missing.png")))
+  [card lang res art]
+   (let [ code (:code card)
+         local-path (str "http://127.0.0.1:3000/" code ".png")
+         remote-path (str "/img/cards/en/default/stock/" code ".png")
+         final-path (if (use-remote-cards?)
+                       remote-path
+                       local-path)]
+     (str final-path)))
 
 (defn image-or-face [card]
   (cond

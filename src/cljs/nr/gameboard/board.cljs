@@ -46,7 +46,7 @@
               "stock")
         card (if (or (:face card) (:images card)) card (get @all-cards title))
         images (image-or-face card)]
-    (get-image-path images (keyword lang) (keyword res) (keyword art))))
+    (get-image-path card (keyword lang) (keyword res) (keyword art))))
 
 
 (defn notify

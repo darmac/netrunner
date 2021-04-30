@@ -150,6 +150,11 @@
 (defn make-span [text sym icon-class]
   (s/replace text (js/RegExp. sym "gi") (str "<span class='anr-icon " icon-class "'></span>")))
 
+(defn use-remote-cards?
+  "允许使用远程卡牌图片?"
+  []
+  (get-in @app-state [:options :remote-cards] false))
+
 (defn show-alt-art?
   "Is the current user allowed to use alternate art cards and do they want to see them?"
   ([] (show-alt-art? false))
@@ -167,7 +172,7 @@
                (get-in @app-state [:options :alt-arts (keyword (:code card))] "stock")
                "stock")
          images (image-or-face card)]
-     (get-image-path images (keyword lang) (keyword res) (keyword art)))))
+      (get-image-path card (keyword lang) (keyword res) (keyword art)))))
 
 (defn- base-image-url
   "The default card image. Displays an alternate image if the card is specified as one."
@@ -175,7 +180,7 @@
    (let [lang (get-in @app-state [:options :language] "en")
          res (get-in @app-state [:options :card-resolution] "default")
          art (if (keyword? (:art card)) (:art card) :stock)]
-     (get-image-path (:images card) (keyword lang) (keyword res) art)))
+     (get-image-path card (keyword lang) (keyword res) art)))
 
 (defn- alt-version-from-string
   "Given a string name, get the keyword version or nil"

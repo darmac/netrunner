@@ -33,6 +33,7 @@
   (swap! app-state assoc-in [:options :language] (:language @s))
   (swap! app-state assoc-in [:options :sounds] (:sounds @s))
   (swap! app-state assoc-in [:options :lobby-sounds] (:lobby-sounds @s))
+  (swap! app-state assoc-in [:options :remote-cards] (:remote-cards @s))
   (swap! app-state assoc-in [:options :sounds-volume] (:volume @s))
   (swap! app-state assoc-in [:options :background] (:background @s))
   (swap! app-state assoc-in [:options :card-back] (:card-back @s))
@@ -50,6 +51,7 @@
   (swap! app-state assoc-in [:options :deckstats] (:deckstats @s))
   (.setItem js/localStorage "sounds" (:sounds @s))
   (.setItem js/localStorage "lobby_sounds" (:lobby-sounds @s))
+  (.setItem js/localStorage "remote_cards" (:remote-cards @s))
   (.setItem js/localStorage "sounds_volume" (:volume @s))
   (.setItem js/localStorage "log-width" (:log-width @s))
   (.setItem js/localStorage "log-top" (:log-top @s))
@@ -300,6 +302,12 @@
                              :checked (:sounds @s)
                              :on-change #(swap! s assoc-in [:sounds] (.. % -target -checked))}]
              (tr [:settings.enable-game-sounds "Enable game sounds"])]]
+           [:div
+            [:label [:input {:type "checkbox"
+                             :value (:remote-cards @s)
+                             :checked (:remote-cards @s)
+                             :on-change #(swap! s assoc-in [:remote-cards] (.. % -target -checked))}]
+             "使用服务器远程卡牌图像(不建议启用)"]]
            [:div (tr [:settings.volume "Volume"])
             [:input {:type "range"
                      :min 1 :max 100 :step 1
@@ -503,6 +511,7 @@
                        :language (get-in @app-state [:options :language])
                        :sounds (get-in @app-state [:options :sounds])
                        :lobby-sounds (get-in @app-state [:options :lobby-sounds])
+                       :remote-cards (get-in @app-state [:options :remote-cards])
                        :volume (get-in @app-state [:options :sounds-volume])
                        :show-alt-art (get-in @app-state [:options :show-alt-art])
                        :alt-arts (get-in @app-state [:options :alt-arts])
